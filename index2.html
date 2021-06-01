@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <!--
+    AR.js workshop
+    Author: Matt Nutsch
+    Date: 6-20-2018
+    Description: This is sample code for a workshop on developing an AR.js app.
+    Notes:
+    This code is based in part on Jerome Etienne's examples of AR.js at: https://github.com/jeromeetienne/AR.js/tree/master/aframe
+    It is also based in part on the AFrame documentation, available at: https://aframe.io/docs
+
+    Go to this URL to run this code in a mobile web browser: https://mnutsch.github.io/arjs_workshop/start/index.html
+    Download and print this image for the AR target marker: https://github.com/mnutsch/mnutsch.github.io/raw/master/arjs_workshop/start/Hiro%20pattern%20with%20border.pdf
+    -->
+
+    <!-- include a-frame -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
+    <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
+
+    <script>
+        //wait until the page loads to perform the following
+        window.onload = function () {
+            AFRAME.registerComponent('change-color-on-hover', {
+                schema: {
+                color: {default: 'red'}
+                },
+
+                init: function () {
+                    var data = this.data;
+                    var el = this.el;  // <a-box>
+                    var defaultColor = el.getAttribute('material').color;
+                    let modal = document.querySelector('.modal')
+
+                    el.addEventListener('mousedown', function () {
+                        el.setAttribute('color', data.color);
+                        modal.classList.add("show")
+                    });
+
+                    el.addEventListener('mouseup', function () {
+                        el.setAttribute('color', defaultColor);
+                        modal.classList.remove("show")
+                    });
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+    .modal {
+        position: absolute;
+        left: 0px;
+        top: 20px;
+        right: -999px;
+        top: -999px;
+
+        width: 400px;
+        height: 400px;
+
+        z-index: 999;
+        
+        background: #336699;
+        opacity: 0;
+        
+        transition: opacity 1s ease;
+        }
+        .modal.show {
+        right: 10px;
+        top: 10px;
+        
+        opacity: 1;
+    }
+    </style>
+
+</head>
+
+<!-- start the body of your page -->
+
+<body style='margin : 0px; overflow: hidden;'>
+    <!---
+        You can get sample models from here
+        https://github.com/KhronosGroup/glTF-Sample-Models
+    -->
+    <div class="modal">
+      <div class="name">Levis 501</div>
+    </div>
+    <a-scene stats embedded arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960; debugUIEnabled: false;'>
+        <!-- define auto generated markers -->
+        <!-- <a-scene embeded arjs='detectionMode: mono_and_matrix; matrixCodeType: 3x3;'> -->
+        <!-- define assets -->
+        <a-assets>
+            <!-- <a-asset-item id="brainstem" src="https://aframe.io/aframe/examples/assets/models/tree2.glb"></a-asset-item> -->
+            <!-- <a-asset-item id="brainstem" src="https://cdn.aframe.io/test-models/models/glTF-2.0/virtualcity/VC.gltf"></a-asset-item> -->
+            <a-asset-item id="brainstem"
+                src="https://cdn.aframe.io/test-models/models/glTF-2.0/brainstem/BrainStem.gltf"></a-asset-item>
+            <a-mixin id="giant" scale="5 5 5"></a-mixin>
+        </a-assets>
+        <!-- the marker to render asset on-->
+        <a-marker-camera preset='hiro'>
+            <!-- <a-sphere material="color: blue; opacity: 0.5" radius="0.25"></a-sphere> -->
+            <!-- <a-box position='0 1 0' material='color: red;'
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 10000">
+        </a-box> -->
+            <!-- <a-entity gltf-model="#brainstem" position="0 1 0" scale="1 1 1"></a-entity> -->
+            <a-image
+                src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200"
+                rotation="-15 0 0" scale="3 3 3" position="0 0 0" change-color-on-hover="color: blue"
+                >
+            </a-image>
+            <a-cursor></a-cursor>
+        </a-marker-camera>
+        <a-camera gps-camera rotation-reader></a-camera>
+
+        <!-- the camar entity-->
+        <!-- <a-camera>
+            <a-cursor></a-cursor>
+        </a-camera> -->
+        <!-- <a-entity position="0 1.6 0" camera>
+            <a-cursor></a-cursor>
+        </a-entity> -->
+        <!-- <a-entity id="rig" position="0 1.6 0">
+            <a-entity id="camera" camera look-controls></a-entity>
+          </a-entity> -->
+    </a-scene>
+</body>
+
+
+
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <!--
+    AR.js workshop
+    Author: Matt Nutsch
+    Date: 6-20-2018
+    Description: This is sample code for a workshop on developing an AR.js app.
+    Notes:
+    This code is based in part on Jerome Etienne's examples of AR.js at: https://github.com/jeromeetienne/AR.js/tree/master/aframe
+    It is also based in part on the AFrame documentation, available at: https://aframe.io/docs
+
+    Go to this URL to run this code in a mobile web browser: https://mnutsch.github.io/arjs_workshop/start/index.html
+    Download and print this image for the AR target marker: https://github.com/mnutsch/mnutsch.github.io/raw/master/arjs_workshop/start/Hiro%20pattern%20with%20border.pdf
+    -->
+
+    <!-- include a-frame -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
+    <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
+
+    <script>
+        AFRAME.registerComponent('posfinder', {
+            init: function() {
+                console.log("POS FINDER ONLINE");
+                this.loaded = false;
+                const selector = document.querySelector(".pos");
+                const cam1 = document.querySelector("#camera1");
+                window.addEventListener('gps-camera-update-position', e => {
+                    if(this.loaded === false) {
+                        console.log("POS :: ", e.detail.position.latitude, e.detail.position.longitude);
+                        selector.innerText = `POS :: ${e.detail.position.latitude} : ${e.detail.position.longitude}`;
+                        this.loaded = true;
+                    }
+                });
+            }
+        });
+
+        AFRAME.registerComponent('change-color-on-hover', {
+            schema: {
+                color: { default: 'red' }
+            },
+
+            init: function () {
+                var data = this.data;
+                var el = this.el;  // <a-box>
+                var defaultColor = el.getAttribute('material').color;
+                let modal = document.querySelector('.modal')
+
+                el.addEventListener('mousedown', function () {
+                    el.setAttribute('color', data.color);
+                    modal.classList.add("show")
+                });
+
+                el.addEventListener('mouseup', function () {
+                    el.setAttribute('color', defaultColor);
+                    modal.classList.remove("show")
+                });
+            }
+        });
+
+        const staticLoadPlaces = [
+            {
+                name: 'Home',
+                location: {
+                    lat: 37.766498,
+                    lng: -122.41568,
+                }
+            },
+        ];
+
+        const models = [
+            {
+                url: './assets/brain/BrainStem.gltf',
+                scale: '1 1 1',
+                info: 'Avocadomite, Lv. 5, HP 10/10',
+                rotation: '0 180 0',
+            }
+        ];
+
+        const setModel = (model, entity) => {
+            if (model.scale) {
+                entity.setAttribute('scale', model.scale);
+            }
+
+            if (model.rotation) {
+                entity.setAttribute('rotation', model.rotation);
+            }
+
+            if (model.position) {
+                entity.setAttribute('position', model.position);
+            }
+
+            entity.setAttribute('gltf-model', model.url);
+
+            const div = document.querySelector('.instructions');
+            div.innerText = model.info;
+        };
+
+        const renderPlaces = (places) => {
+            let scene = document.querySelector('a-scene');
+
+            places.forEach((place) => {
+                let latitude = place.location.lat;
+                let longitude = place.location.lng;
+
+                let model = document.createElement('a-entity');
+                model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+
+                setModel(models[0], model);
+
+                model.setAttribute('animation-mixer', '');
+
+                // model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+                // model.setAttribute('gltf-model', 'https://cdn.aframe.io/test-models/models/glTF-2.0/brainstem/BrainStem.gltf');
+                // model.setAttribute('rotation', '0 180 0');
+                // model.setAttribute('animation-mixer', '');
+                // model.setAttribute('scale', '0.5 0.5 0.5');
+
+                // let model = document.createElement("a-image");
+                // model.setAttribute('rotation', '-45 0 0');
+                // model.setAttribute('src', 'https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200')
+                // model.setAttribute('animation-mixer', '');
+                // model.setAttribute('scale', '0.5 0.5 0.5');
+
+                model.addEventListener('loaded', () => {
+                    window.dispatchEvent(new CustomEvent('gps-entity-place-loaded'))
+                });
+
+                scene.appendChild(model);
+            });
+        }
+        //wait until the page loads to perform the following
+        window.onload = function () {
+            renderPlaces(staticLoadPlaces);
+        }
+    </script>
+    <style type="text/css">
+        .modal {
+            position: absolute;
+            left: 0px;
+            top: 20px;
+            right: -999px;
+            top: -999px;
+
+            width: 400px;
+            height: 400px;
+
+            z-index: 999;
+
+            background: #336699;
+            opacity: 0;
+
+            transition: opacity 1s ease;
+        }
+
+        .modal.show {
+            right: 10px;
+            top: 10px;
+
+            opacity: 1;
+        }
+
+        .centered {
+            height: 20%;
+            justify-content: center;
+            position: fixed;
+            bottom: 0%;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            margin: 0px auto;
+            left: 0;
+            right: 0;
+        }
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            background-color: transparent;
+            width: 2em;
+            height: 2em;
+            border-radius: 100%;
+            font-size: 2em;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            outline: none;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 5%;
+            font-size: 1.25em;
+            color: white;
+            z-index: 999999;
+        }
+
+        .pos {
+        display: flex;
+        z-index: 999999;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 5%;
+        border: 2px solid white;
+        background-color: #5e5e5ea8;
+        width: 300px;
+        height: 2em;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 16px;
+        color: white;
+        outline: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        }
+    </style>
+
+</head>
+
+<!-- start the body of your page -->
+
+
+<body style='margin: 0; overflow: hidden;'>
+    <div class="centered instructions"></div>
+    <a-scene vr-mode-ui="enabled: false" 
+        embedded
+        arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:1280; displayWidth: 1280; displayHeight: 1280
+        ;cameraParametersUrl: ./camera_para.dat'
+        >
+        <a-entity posfinder></a-entity>
+        
+        <!-- <a-camera gps-camera="minDistance: 100;" rotation-reader>
+        </a-camera> -->
+        <!-- <a-camera gps-camera="minDistance: 1;" rotation-reader></a-camera> -->
+        <a-camera id='camera1'  arjs-look-controls='smoothingFactor: 0.1' 
+            gps-camera='minDistance: 1;' rotation-reader>
+        </a-camera>
+    </a-scene>
+    
+    <div class="pos"></div>
+    <div class="centered">
+        <button data-action="change"></button>
+    </div>
+</body>
+
+
+
+</html>
