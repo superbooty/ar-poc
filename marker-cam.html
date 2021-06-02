@@ -362,14 +362,13 @@
 
         <a-entity posfinder></a-entity>
 
-        <a-marker type='barcode' value='0' id="mark1">
+        <a-marker type='barcode' value='0' >
             <a-image
                 src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200"
                 color="white" rotation="-105 0 0"  scale="3 3 3" position="0 0 0" change-color-on-click="color: blue;">
             </a-image>        
         </a-marker>
-        <a-camera id='camera1'  arjs-look-controls='smoothingFactor: 0.1' 
-            rotation-reader>
+        <a-camera  rotation-reader>
             <a-cursor></a-cursor>
         </a-camera>
     </a-scene>
