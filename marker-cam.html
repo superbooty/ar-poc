@@ -21,7 +21,7 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://rawgit.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script>
         AFRAME.registerComponent('posfinder', {
             init: function() {
@@ -53,6 +53,7 @@
                 el.addEventListener('mouseenter', function () {
                     el.setAttribute('color', data.color);
                     modal.classList.add("show")
+                    // renderImage();
                 });
 
                 el.addEventListener('mouseleave', function () {
@@ -100,6 +101,34 @@
             div.innerText = model.info;
         };
 
+        const productModalAsImage = () => {
+            let marker = document.querySelector('#mark1');
+            var node = document.querySelector('#app');
+            let imgNode = document.querySelector('a-image');
+            domtoimage.toPng(node)
+                .then(function (dataUrl) {
+                    var img = new Image();
+                    img.src = dataUrl;
+                    // document.body.appendChild(img);
+                    // apend or create new node
+                    if (!imgNode) {
+                        let model = document.createElement('a-image');
+                        model.setAttribute('id', 'img-node');
+                        model.setAttribute('src', dataUrl);
+                        model.setAttribute('scale', "3 3 3");
+                        model.setAttribute('rotation', "-90 0 0");
+                        model.setAttribute('position', "0 0 0");
+                        marker.appendChild(model);
+                        
+                    }
+                    
+                })
+                .catch(function (error) {
+                    console.error('oops, something went wrong!', error);
+                });
+
+        }
+
         const renderPlaces = (places) => {
             let scene = document.querySelector('a-scene');
 
@@ -139,7 +168,9 @@
             const {
                 createApp,
                 reactive,
-                ref
+                ref,
+                onMounted,
+                nextTick
             } = Vue;
 
             const App = {
@@ -171,10 +202,11 @@
                     item: Object,
                 },
                 setup(props) {
-                    console.log("PROPS :: ", props.item)
+                    console.log("PROPS :: ", props.item);
                 },
             });
             app.mount("#app");
+
         }
     </script>
     <style type="text/css">
@@ -330,7 +362,7 @@
 
         <a-entity posfinder></a-entity>
 
-        <a-marker type='barcode' value='0'>
+        <a-marker type='barcode' value='0' id="mark1">
             <a-image
                 src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200"
                 color="white" rotation="-105 0 0"  scale="3 3 3" position="0 0 0" change-color-on-click="color: blue;">

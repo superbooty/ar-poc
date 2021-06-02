@@ -74,7 +74,7 @@
         const models = [
             {
                 url: './assets/brain/BrainStem.gltf',
-                scale: '1 1 1',
+                scale: '.8 .8 .8',
                 info: 'Avocadomite, Lv. 5, HP 10/10',
                 rotation: '0 180 0',
             }
@@ -228,7 +228,7 @@
     <div class="centered instructions"></div>
     <a-scene vr-mode-ui="enabled: false" 
         embedded
-        arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:1280; displayWidth: 1280; displayHeight: 1280
+        arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960
         ;cameraParametersUrl: ./camera_para.dat'
         >
         <a-entity posfinder></a-entity>
@@ -236,9 +236,7 @@
         <!-- <a-camera gps-camera="minDistance: 100;" rotation-reader>
         </a-camera> -->
         <!-- <a-camera gps-camera="minDistance: 1;" rotation-reader></a-camera> -->
-        <a-camera id='camera1'  arjs-look-controls='smoothingFactor: 0.1' 
-            gps-camera='minDistance: 1;' rotation-reader>
-        </a-camera>
+        <a-camera id='camera1' arjs-look-controls='smoothingFactor: 0.1' gps-camera='gpsMinDistance: 1' rotation-reader> </a-camera>
     </a-scene>
     
     <div class="pos"></div>
