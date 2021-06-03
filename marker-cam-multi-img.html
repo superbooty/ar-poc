@@ -46,7 +46,10 @@
         });
 
         AFRAME.registerComponent('gaze-handler', {
-            schema: {type: 'string', default: 'no product selected'},
+            schema: {
+                productId: {type: 'string', default: 'no product selected'},
+                color: {default: 'white'}
+            },
 
             init: function () {
                 var data = this.data;
@@ -56,14 +59,14 @@
                 let modal = document.querySelector('.modal')
 
                 el.addEventListener('mouseenter', function () {
-                    // el.setAttribute('color', data.color);
+                    el.setAttribute('color', data.color);
                     //modal.classList.add("show")
                     // renderImage();
-                    title.innerText = data;
+                    title.innerText = data.productId;
                 });
 
                 el.addEventListener('mouseleave', function () {
-                    //el.setAttribute('color', defaultColor);
+                    el.setAttribute('color', defaultColor);
                     modal.classList.remove("show")
                 });
             }
@@ -376,7 +379,7 @@
         </a-assets>
 
         <a-marker type='barcode' value='0'>
-            <a-box src="#tester" color="white" rotation="-105 0 0" scale="2 2 2" position="0 0 0"
+            <a-box src="#tester" color="#959595" rotation="-105 0 0" scale="2 2 2" position="0 0 0"
                 animation="
                     property: rotation;
                     from: 0 0 0;
@@ -385,10 +388,10 @@
                     direction: alternate;
                     loop: true;
                     fill: forwards;"
-                    gaze-handler="005054891"
+                    gaze-handler="productId: 005054891"
                 >
             </a-box>
-            <a-box src="#tester2" color="white" rotation="-105 0 0" scale="2 2 2" position="3.5 0 0"
+            <a-box src="#tester2" color="#959595" rotation="-105 0 0" scale="2 2 2" position="3.5 0 0"
                 animation="
                     property: rotation;
                     from: 0 0 0;
@@ -397,12 +400,12 @@
                     direction: alternate;
                     loop: true;
                     fill: forwards;"
-                    gaze-handler="349640094"
+                    gaze-handler="productId: 349640094"
                 >
             </a-box>
         </a-marker>
 
-        <a-camera position="0 1 4" >
+        <a-camera position="0 1.6 0" look-controls='smoothingFactor: 0.1'>
             <a-cursor fuse=“true” fuse-timeout=“1000”></a-cursor>
         </a-camera>
 
