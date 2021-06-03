@@ -45,25 +45,25 @@
             }
         });
 
-        AFRAME.registerComponent('change-color-on-click', {
-            schema: {
-                color: { default: 'red' }
-            },
+        AFRAME.registerComponent('gaze-handler', {
+            schema: {type: 'string', default: 'no product selected'},
 
             init: function () {
                 var data = this.data;
                 var el = this.el;  // <a-box>
                 var defaultColor = el.getAttribute('material').color;
+                const title = document.querySelector('.instructions');
                 let modal = document.querySelector('.modal')
 
                 el.addEventListener('mouseenter', function () {
-                    el.setAttribute('color', data.color);
-                    modal.classList.add("show")
+                    // el.setAttribute('color', data.color);
+                    //modal.classList.add("show")
                     // renderImage();
+                    title.innerText = data;
                 });
 
                 el.addEventListener('mouseleave', function () {
-                    el.setAttribute('color', defaultColor);
+                    //el.setAttribute('color', defaultColor);
                     modal.classList.remove("show")
                 });
             }
@@ -240,7 +240,7 @@
         .centered {
             height: 20%;
             justify-content: center;
-            position: fixed;
+            position: absolute;
             bottom: 0%;
             display: flex;
             flex-direction: row;
@@ -265,10 +265,10 @@
             outline: none;
         }
 
-        .instructions {
-            position: fixed;
+        .instructions, .msg {
             top: 5%;
-            font-size: 1.25em;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
             color: white;
             z-index: 999999;
         }
@@ -343,7 +343,7 @@
 
 
 <body style='margin: 0; overflow: hidden;'>
-    <div class="centered instructions"></div>
+    <div class="centered msg">now loading :: <span class="instructions"></span></div>
     <script type="text/x-template" id="product-template">
         <div v-if="item" class="product-card" 
             @click="atcProduct(data.code)">
@@ -385,6 +385,7 @@
                     direction: alternate;
                     loop: true;
                     fill: forwards;"
+                    gaze-handler="005054891"
                 >
             </a-box>
             <a-box src="#tester2" color="white" rotation="-105 0 0" scale="2 2 2" position="3.5 0 0"
@@ -396,6 +397,7 @@
                     direction: alternate;
                     loop: true;
                     fill: forwards;"
+                    gaze-handler="349640094"
                 >
             </a-box>
         </a-marker>
