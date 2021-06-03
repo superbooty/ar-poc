@@ -23,14 +23,20 @@
     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script>
-        AFRAME.registerComponent('posfinder', {
+        AFRAME.registerComponent("animation-manager", {
             init: function() {
+              // add some stuff here at some point
+            }
+        });
+
+        AFRAME.registerComponent('posfinder', {
+            init: function () {
                 console.log("POS FINDER ONLINE");
                 this.loaded = false;
                 const selector = document.querySelector(".pos");
                 const cam1 = document.querySelector("#camera1");
                 window.addEventListener('gps-camera-update-position', e => {
-                    if(this.loaded === false) {
+                    if (this.loaded === false) {
                         console.log("POS :: ", e.detail.position.latitude, e.detail.position.longitude);
                         selector.innerText = `POS :: ${e.detail.position.latidude} : ${e.detail.position.longitude}`;
                         this.loaded = true;
@@ -119,9 +125,9 @@
                         model.setAttribute('rotation', "-90 0 0");
                         model.setAttribute('position', "0 0 0");
                         marker.appendChild(model);
-                        
+
                     }
-                    
+
                 })
                 .catch(function (error) {
                     console.error('oops, something went wrong!', error);
@@ -283,7 +289,7 @@
             color: white;
             outline: none;
         }
-      
+
         .pos::after {
             z-index: 999999;
             content: "POS";
@@ -358,23 +364,32 @@
         arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:980; displayWidth: 1280; displayHeight: 980
         ; debugUIEnabled: true; cameraParametersUrl: ./camera_para.dat'
         > -->
-    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
+    <a-scene embedded
+        arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
 
         <a-entity posfinder></a-entity>
+        <a-assets>
+            <img id="tester"
+                src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200">
+        </a-assets>
 
-        <a-marker type='barcode' value='0' >
-            <a-image
-                src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200"
-                color="white" rotation="-105 0 0"  scale="3 3 3" position="0 0 0" change-color-on-click="color: blue;">
-            </a-image>        
+        <a-marker type='barcode' value='0'>
+            <a-box src="#tester" color="white" rotation="-105 0 0" scale="3 3 3" position="0 0 0"
+                change-color-on-click="color: blue;"
+                animation="property: rotation; from: 0 0 0; to: 0 0 360; dur: 8000; 
+                    easing: linear; loop: true; startEvents: click"
+                >
+            </a-box>
         </a-marker>
-        <a-camera  rotation-reader>
+
+        <a-camera position="0 1 4" >
             <a-cursor></a-cursor>
         </a-camera>
+
     </a-scene>
-    
+
     <div class="pos"></div>
-    
+
     <div class="centered">
         <button data-action="change"></button>
     </div>
