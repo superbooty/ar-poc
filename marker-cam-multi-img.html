@@ -22,10 +22,90 @@
     <script src="https://rawgit.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-    <script>
+    <script type="module">
+        import {productQuery} from "./gql/productQuery.js";
+        // I dont like this
+        // window.query = productQuery;
+        window.onload = function () {
+            // renderPlaces(staticLoadPlaces);
+            const {
+                createApp,
+                reactive,
+                ref,
+                onMounted,
+                nextTick
+            } = Vue;
+
+            const App = {
+                template: `#app-template`,
+                setup() {
+                    const item = ref(null);
+
+                    // fetch(`./public/product/177800038.json`)
+                    //     .then((response) => {
+                    //         const jsonObj = response.json();
+                    //         console.log(jsonObj);
+                    //         return jsonObj;
+                    //     })
+                    //     .then((myJson) => {
+                    //         console.log(myJson);
+                    //         item.value = myJson;
+                    //     });
+                    //
+                    const fetchProduct = (code) => {
+                        const fetchPromises = [];
+                        const promise = fetch(`https://staging01.dtc.levi.com/nextgen-webhooks/?operationName=product&locale=US-en_US`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                        body: JSON.stringify({
+                            operationName: "product",
+                            variables: {
+                                code: code
+                            },
+                            query: productQuery
+                        }),
+                        });
+                        fetchPromises.push(promise);
+                        Promise.all(fetchPromises).then(function (responses) {
+                            // Get a JSON object from each of the responses
+                            return Promise.all(responses.map(function (response) {
+                                return response.json();
+                            }));
+                        }).then(function (data) {
+                            console.log("DATA :: ", data[0]);
+                            item.value = data[0];
+                        }).catch(function (error) {
+                            console.log(error);
+                        });
+                    }
+                    return {
+                        item,
+                        fetchProduct
+                    }
+                },
+            }
+            this.app = createApp(App);
+
+            app.component("product", {
+                template: '#product-template',
+                props: {
+                    item: Object,
+                },
+                setup(props) {
+                    console.log("PROPS :: ", props.item);
+                },
+            })
+            this.vm = this.app.mount("#app");
+            // this.vm.fetchProduct();
+        }
+    </script>
+    <script >
         AFRAME.registerComponent("animation-manager", {
-            init: function() {
-              // add some stuff here at some point
+            init: function () {
+                // add some stuff here at some point
             }
         });
 
@@ -47,8 +127,8 @@
 
         AFRAME.registerComponent('gaze-handler', {
             schema: {
-                productId: {type: 'string', default: 'no product selected'},
-                color: {default: 'white'}
+                productId: { type: 'string', default: 'no product selected' },
+                color: { default: 'white' }
             },
 
             init: function () {
@@ -58,14 +138,15 @@
                 const title = document.querySelector('.instructions');
                 let modal = document.querySelector('.modal')
 
-                el.addEventListener('mouseenter', function () {
+                el.addEventListener('mousedown', function () {
                     el.setAttribute('color', data.color);
-                    //modal.classList.add("show")
+                    modal.classList.add("show")
                     // renderImage();
                     title.innerText = data.productId;
+                    window.vm.fetchProduct(data.productId);
                 });
 
-                el.addEventListener('mouseleave', function () {
+                el.addEventListener('mouseup', function () {
                     el.setAttribute('color', defaultColor);
                     modal.classList.remove("show")
                 });
@@ -172,51 +253,7 @@
             });
         }
         //wait until the page loads to perform the following
-        window.onload = function () {
-            // renderPlaces(staticLoadPlaces);
-            const {
-                createApp,
-                reactive,
-                ref,
-                onMounted,
-                nextTick
-            } = Vue;
-
-            const App = {
-                template: `<div class="name"><product :item="item"></product></div>`,
-                setup() {
-                    const item = ref(null);
-
-                    fetch(`./public/product/177800038.json`)
-                        .then((response) => {
-                            const jsonObj = response.json();
-                            console.log(jsonObj);
-                            return jsonObj;
-                        })
-                        .then((myJson) => {
-                            console.log(myJson);
-                            item.value = myJson;
-                        });
-
-                    return {
-                        item
-                    }
-                },
-            }
-            const app = createApp(App);
-
-            app.component("product", {
-                template: '#product-template',
-                props: {
-                    item: Object,
-                },
-                setup(props) {
-                    console.log("PROPS :: ", props.item);
-                },
-            });
-            app.mount("#app");
-
-        }
+        
     </script>
     <style type="text/css">
         .modal {
@@ -268,7 +305,8 @@
             outline: none;
         }
 
-        .instructions, .msg {
+        .instructions,
+        .msg {
             top: 5%;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 16px;
@@ -347,6 +385,11 @@
 
 <body style='margin: 0; overflow: hidden;'>
     <div class="centered msg">now loading :: <span class="instructions"></span></div>
+    <script type="text/x-template" id="app-template">
+        <div id="#wrapper" ref="productWrapper">
+            <product :item="item"></product>
+        </div>
+    </script>
     <script type="text/x-template" id="product-template">
         <div v-if="item" class="product-card" 
             @click="atcProduct(data.code)">
@@ -367,46 +410,39 @@
         arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:980; displayWidth: 1280; displayHeight: 980
         ; debugUIEnabled: true; cameraParametersUrl: ./camera_para.dat'
         > -->
-    <a-scene embedded
+    <a-scene embedded cursor="rayOrigin: mouse"
         arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
 
         <a-entity posfinder></a-entity>
         <a-assets>
             <img id="tester"
                 src="https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200">
-                <img id="tester2"
+            <img id="tester2"
                 src="https://lsco.scene7.com/is/image/lsco/349640094-alt1-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=1050&hei=1400">
         </a-assets>
 
         <a-marker type='barcode' value='0'>
-            <a-box src="#tester" color="#959595" rotation="-105 0 0" scale="2 2 2" position="0 0 0"
-                animation="
+            <a-box src="#tester" color="#959595" scale="2 2 2" position="0 0 0" animation="
                     property: rotation;
-                    from: 0 0 0;
-                    to: 360 0 360;
+                    from: -45 0 0
+                    to: -45 0 90;
                     dur: 6000;
-                    direction: alternate;
-                    loop: true;
-                    fill: forwards;"
-                    gaze-handler="productId: 005054891"
-                >
+                    loop: 1;
+                    fill: forwards;" gaze-handler="productId: 005054891">
             </a-box>
-            <a-box src="#tester2" color="#959595" rotation="-105 0 0" scale="2 2 2" position="3.5 0 0"
-                animation="
+            <a-box src="#tester2" color="#959595" scale="2 2 2" position="3.5 0 0" animation="
                     property: rotation;
-                    from: 0 0 0;
-                    to: 360 0 360;
+                    from: -45 0 0
+                    to: -45 0 90;
                     dur: 6000;
-                    direction: alternate;
-                    loop: true;
-                    fill: forwards;"
-                    gaze-handler="productId: 349640094"
-                >
+                    loop: 1;
+                    fill: forwards;
+                    start" gaze-handler="productId: 349640094">
             </a-box>
         </a-marker>
 
-        <a-camera position="0 1.6 0" look-controls='smoothingFactor: 0.1'>
-            <a-cursor fuse=“true” fuse-timeout=“1000”></a-cursor>
+        <a-camera position="0 0 0" arjs-look-controls='smoothingFactor: 0.1'>
+            <a-cursor fuse="true" fuseTimeout="2000"></a-cursor>
         </a-camera>
 
     </a-scene>
