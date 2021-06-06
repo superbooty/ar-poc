@@ -19,9 +19,10 @@
     <!-- include a-frame -->
     <script src="https://unpkg.com/vue@next"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://rawgit.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
+
     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="/public/lib/mouse-cursor.js"></script>
     <script type="module">
         import {productQuery} from "./gql/productQuery.js";
         // I dont like this
@@ -40,33 +41,21 @@
                 template: `#app-template`,
                 setup() {
                     const item = ref(null);
-
-                    // fetch(`./public/product/177800038.json`)
-                    //     .then((response) => {
-                    //         const jsonObj = response.json();
-                    //         console.log(jsonObj);
-                    //         return jsonObj;
-                    //     })
-                    //     .then((myJson) => {
-                    //         console.log(myJson);
-                    //         item.value = myJson;
-                    //     });
-                    //
                     const fetchProduct = (code) => {
                         const fetchPromises = [];
                         const promise = fetch(`https://staging01.dtc.levi.com/nextgen-webhooks/?operationName=product&locale=US-en_US`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Accept: "application/json",
-                        },
-                        body: JSON.stringify({
-                            operationName: "product",
-                            variables: {
-                                code: code
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
                             },
-                            query: productQuery
-                        }),
+                            body: JSON.stringify({
+                                operationName: "product",
+                                variables: {
+                                    code: code
+                                },
+                                query: productQuery
+                            }),
                         });
                         fetchPromises.push(promise);
                         Promise.all(fetchPromises).then(function (responses) {
@@ -99,7 +88,6 @@
                 },
             })
             this.vm = this.app.mount("#app");
-            // this.vm.fetchProduct();
         }
     </script>
     <script >
@@ -410,8 +398,10 @@
         arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:980; displayWidth: 1280; displayHeight: 980
         ; debugUIEnabled: true; cameraParametersUrl: ./camera_para.dat'
         > -->
-    <a-scene embedded cursor="rayOrigin: mouse"
-        arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
+    
+    <a-scene embedded
+        arjs='sourceType: webcam; debugUIEnabled: false; 
+        detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
 
         <a-entity posfinder></a-entity>
         <a-assets>
@@ -422,26 +412,17 @@
         </a-assets>
 
         <a-marker type='barcode' value='0'>
-            <a-box src="#tester" color="#959595" scale="2 2 2" position="0 0 0" animation="
-                    property: rotation;
-                    from: -45 0 0
-                    to: -45 0 90;
-                    dur: 6000;
-                    loop: 1;
-                    fill: forwards;" gaze-handler="productId: 005054891">
+            <a-box material="src: #tester" color="#959595" rotation="-15 0 0" scale="2 2 2" position="0 0 0" 
+                gaze-handler="productId: 005054891">
             </a-box>
-            <a-box src="#tester2" color="#959595" scale="2 2 2" position="3.5 0 0" animation="
-                    property: rotation;
-                    from: -45 0 0
-                    to: -45 0 90;
-                    dur: 6000;
-                    loop: 1;
-                    fill: forwards;
-                    start" gaze-handler="productId: 349640094">
+            <a-box src="#tester2" color="#959595" rotation="-15 0 0" scale="2 2 2" position="3.5 0 0" 
+                gaze-handler="productId: 349640094">
             </a-box>
         </a-marker>
-
-        <a-camera position="0 0 0" arjs-look-controls='smoothingFactor: 0.1'>
+        <!-- <a-entity camera  position="0 1.6 0" look-controls >
+            <a-cursor fuse="true" fuseTimeout="2000"></a-cursor>
+        </a-entity> -->
+        <a-camera>
             <a-cursor fuse="true" fuseTimeout="2000"></a-cursor>
         </a-camera>
 
