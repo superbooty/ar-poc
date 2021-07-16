@@ -73,10 +73,10 @@
 
         const models = [
             {
-                url: './assets/brain/BrainStem.gltf',
-                scale: '.8 .8 .8',
+                url: './assets/hoodie/hoodie.gltf',
+                scale: '.05 .05 .05',
                 info: 'Avocadomite, Lv. 5, HP 10/10',
-                rotation: '0 180 0',
+                rotation: '-90 15 45',
             }
         ];
 
@@ -230,6 +230,7 @@
         embedded
         arjs='sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960
         ;cameraParametersUrl: ./camera_para.dat'
+        gltf-model="dracoDecoderPath: https://cdn.8thwall.com/web/aframe/draco-decoder/"
         >
         <a-entity posfinder></a-entity>
         
