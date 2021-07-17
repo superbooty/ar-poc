@@ -5,12 +5,21 @@
     <style type="text/css">
         .product-card {
             display: flex;
-            width: 200px;
+            width: 280px;
             margin: 0 auto;
             font-family: Arial, Helvetica, sans-serif;
             background: white;
             flex-direction: column;
             flex-wrap: nowrap;
+        }
+
+        .product-card .atc-btn {
+            height: 40px;
+            background: black;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin: 10px 0;
         }
 
         .product-card .product-img {
@@ -27,7 +36,7 @@
         .product-card .product-details {
             display: flex;
             flex-direction: column;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 400;
             text-align: left;
             height: 90px;
@@ -40,6 +49,7 @@
 
         .product-details .product-price {
             color: #a71e1e;
+            font-size: 700;
         }
 
         .product-card.product-card .product-details.separator {
@@ -57,7 +67,16 @@
             <div class="color">Color: Celestial Rinse</div>
             <div class="product-price">$100.00</div>
         </div>
+        <button class="atc-btn">Add To Cart</button>
     </div>
 </body>
-
+<script>
+    let viewer = document.querySelector('.product-card');
+    viewer.addEventListener('click', () => {
+        console.log('test');
+        viewer.classList.remove('show');
+        viewer.classList.add('test')
+        window.vm.clearProduct();
+    });
+</script>
 </html>

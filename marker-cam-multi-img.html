@@ -23,229 +23,6 @@
     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="/public/lib/mouse-cursor.js"></script>
-    <script type="module">
-        import {productQuery} from "./gql/productQuery.js";
-        // I dont like this
-        // window.query = productQuery;
-        window.onload = function () {
-            // renderPlaces(staticLoadPlaces);
-            const {
-                createApp,
-                reactive,
-                ref,
-                onMounted,
-                nextTick
-            } = Vue;
-
-            const App = {
-                template: `#app-template`,
-                setup() {
-                    const item = ref(null);
-                    const fetchProduct = (code) => {
-                        const fetchPromises = [];
-                        const promise = fetch(`https://www.levi.com/nextgen-webhooks/?operationName=product&locale=US-en_US`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Accept: "application/json",
-                            },
-                            body: JSON.stringify({
-                                operationName: "product",
-                                variables: {
-                                    code: code
-                                },
-                                query: productQuery
-                            }),
-                        });
-                        fetchPromises.push(promise);
-                        Promise.all(fetchPromises).then(function (responses) {
-                            // Get a JSON object from each of the responses
-                            return Promise.all(responses.map(function (response) {
-                                return response.json();
-                            }));
-                        }).then(function (data) {
-                            console.log("DATA :: ", data[0]);
-                            item.value = data[0];
-                        }).catch(function (error) {
-                            console.log(error);
-                        });
-                    }
-                    return {
-                        item,
-                        fetchProduct
-                    }
-                },
-            }
-            this.app = createApp(App);
-
-            app.component("product", {
-                template: '#product-template',
-                props: {
-                    item: Object,
-                },
-                setup(props) {
-                    console.log("PROPS :: ", props.item);
-                },
-            })
-            this.vm = this.app.mount("#app");
-        }
-    </script>
-    <script >
-        AFRAME.registerComponent("animation-manager", {
-            init: function () {
-                // add some stuff here at some point
-            }
-        });
-
-        AFRAME.registerComponent('posfinder', {
-            init: function () {
-                console.log("POS FINDER ONLINE");
-                this.loaded = false;
-                const selector = document.querySelector(".pos");
-                const cam1 = document.querySelector("#camera1");
-                window.addEventListener('gps-camera-update-position', e => {
-                    if (this.loaded === false) {
-                        console.log("POS :: ", e.detail.position.latitude, e.detail.position.longitude);
-                        selector.innerText = `POS :: ${e.detail.position.latidude} : ${e.detail.position.longitude}`;
-                        this.loaded = true;
-                    }
-                });
-            }
-        });
-
-        AFRAME.registerComponent('gaze-handler', {
-            schema: {
-                productId: { type: 'string', default: 'no product selected' },
-                color: { default: 'white' }
-            },
-
-            init: function () {
-                var data = this.data;
-                var el = this.el;  // <a-box>
-                var defaultColor = el.getAttribute('material').color;
-                const title = document.querySelector('.instructions');
-                let modal = document.querySelector('.modal');
-                let interval = null;
-                el.addEventListener('mousedown', function () {
-                    interval = window.setInterval(() => {
-                        el.setAttribute('color', data.color);
-                        modal.classList.add("show")
-                        // renderImage();
-                        title.innerText = data.productId;
-                        window.vm.fetchProduct(data.productId);
-                    }, 500);
-                });
-
-                el.addEventListener('mouseup', function () {
-                    window.clearInterval(interval);
-                    el.setAttribute('color', defaultColor);
-                    modal.classList.remove("show")
-                });
-            }
-        });
-
-        const staticLoadPlaces = [
-            {
-                name: 'Home',
-                location: {
-                    lat: 37.766498,
-                    lng: -122.41568,
-                }
-            },
-        ];
-
-        const models = [
-            {
-                url: './assets/brain/BrainStem.gltf',
-                scale: '1 1 1',
-                info: 'Avocadomite, Lv. 5, HP 10/10',
-                rotation: '0 180 0',
-            }
-        ];
-
-        const setModel = (model, entity) => {
-            if (model.scale) {
-                entity.setAttribute('scale', model.scale);
-            }
-
-            if (model.rotation) {
-                entity.setAttribute('rotation', model.rotation);
-            }
-
-            if (model.position) {
-                entity.setAttribute('position', model.position);
-            }
-
-            entity.setAttribute('gltf-model', model.url);
-
-            const div = document.querySelector('.instructions');
-            div.innerText = model.info;
-        };
-
-        const productModalAsImage = () => {
-            let marker = document.querySelector('#mark1');
-            var node = document.querySelector('#app');
-            let imgNode = document.querySelector('a-image');
-            domtoimage.toPng(node)
-                .then(function (dataUrl) {
-                    var img = new Image();
-                    img.src = dataUrl;
-                    // document.body.appendChild(img);
-                    // apend or create new node
-                    if (!imgNode) {
-                        let model = document.createElement('a-image');
-                        model.setAttribute('id', 'img-node');
-                        model.setAttribute('src', dataUrl);
-                        model.setAttribute('scale', "3 3 3");
-                        model.setAttribute('rotation', "-90 0 0");
-                        model.setAttribute('position', "0 0 0");
-                        marker.appendChild(model);
-
-                    }
-
-                })
-                .catch(function (error) {
-                    console.error('oops, something went wrong!', error);
-                });
-
-        }
-
-        const renderPlaces = (places) => {
-            let scene = document.querySelector('a-scene');
-
-            places.forEach((place) => {
-                let latitude = place.location.lat;
-                let longitude = place.location.lng;
-
-                let model = document.createElement('a-entity');
-                model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
-
-                setModel(models[0], model);
-
-                model.setAttribute('animation-mixer', '');
-
-                // model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
-                // model.setAttribute('gltf-model', 'https://cdn.aframe.io/test-models/models/glTF-2.0/brainstem/BrainStem.gltf');
-                // model.setAttribute('rotation', '0 180 0');
-                // model.setAttribute('animation-mixer', '');
-                // model.setAttribute('scale', '0.5 0.5 0.5');
-
-                // let model = document.createElement("a-image");
-                // model.setAttribute('rotation', '-45 0 0');
-                // model.setAttribute('src', 'https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200')
-                // model.setAttribute('animation-mixer', '');
-                // model.setAttribute('scale', '0.5 0.5 0.5');
-
-                model.addEventListener('loaded', () => {
-                    window.dispatchEvent(new CustomEvent('gps-entity-place-loaded'))
-                });
-
-                scene.appendChild(model);
-            });
-        }
-        //wait until the page loads to perform the following
-        
-    </script>
     <style type="text/css">
         .modal {
             position: absolute;
@@ -265,7 +42,11 @@
             right: 10px;
             top: 10px;
 
-            opacity: .8;
+            opacity: 1;
+        }
+
+        .modal.test {
+            background: green;
         }
 
         .centered {
@@ -281,7 +62,7 @@
             right: 0;
         }
 
-        button {
+        .change-btn button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -329,7 +110,7 @@
 
         .product-card {
             display: flex;
-            width: 200px;
+            width: 260px;
             margin: 0 auto;
             padding: 10px;
             border-radius: 10px;
@@ -337,6 +118,15 @@
             background: white;
             flex-direction: column;
             flex-wrap: nowrap;
+        }
+
+        .product-card .atc-btn {
+            height: 40px;
+            background: black;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin: 10px 0;
         }
 
         .product-card .product-img {
@@ -353,11 +143,16 @@
         .product-card .product-details {
             display: flex;
             flex-direction: column;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 400;
             text-align: left;
             height: 90px;
             justify-content: space-between;
+        }
+
+        .product-details .product-price {
+            color: #a71e1e;
+            font-weight: 800;
         }
 
         .product-details .product-name {
@@ -390,8 +185,9 @@
             <div class="product-details" :class="{'separator': separator}">
                 <div class="product-name">{{ item.data.product.name }}</div>
                 <div class="color">Color: {{ item.data.product.colorName }}</div>
-                <div>{{ item.data.product.price.formattedValue }}</div>
+                <div class="product-price">{{ item.data.product.price.formattedValue }}</div>
             </div>
+            <button class="atc-btn" @click="closeModal">Add To Cart</button>
         </div>
     </script>
     <div class="modal" id="app">
@@ -433,11 +229,243 @@
 
     <div class="pos"></div>
 
-    <div class="centered">
-        <button data-action="change"></button>
-    </div>
+    <!-- <div class="centered">
+        <button class="change-btn" data-action="change"></button>
+    </div> -->
 </body>
+<script type="module">
+    import {productQuery} from "./gql/productQuery.js";
+    // I dont like this
+    // window.query = productQuery;
+    window.onload = function () {
+        // renderPlaces(staticLoadPlaces);
+        const {
+            createApp,
+            reactive,
+            ref,
+            onMounted,
+            nextTick
+        } = Vue;
 
+        const App = {
+            template: `#app-template`,
+            setup() {
+                const item = ref(null);
+                const clearProduct = () => {
+                    item.value = null;
+                }
+                const fetchProduct = (code) => {
+                    const fetchPromises = [];
+                    const promise = fetch(`https://www.levi.com/nextgen-webhooks/?operationName=product&locale=US-en_US`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                        body: JSON.stringify({
+                            operationName: "product",
+                            variables: {
+                                code: code
+                            },
+                            query: productQuery
+                        }),
+                    });
+                    fetchPromises.push(promise);
+                    Promise.all(fetchPromises).then(function (responses) {
+                        // Get a JSON object from each of the responses
+                        return Promise.all(responses.map(function (response) {
+                            return response.json();
+                        }));
+                    }).then(function (data) {
+                        console.log("DATA :: ", data[0]);
+                        item.value = data[0];
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+                return {
+                    item,
+                    fetchProduct,
+                    clearProduct,
+                }
+            },
+        }
+        this.app = createApp(App);
+
+        app.component("product", {
+            template: '#product-template',
+            props: {
+                item: Object,
+            },
+            setup(props) {
+                console.log("PROPS :: ", props.item);
+                const closeModal = () => {
+                    window.vm.clearProduct();
+                }
+                return {
+                    closeModal
+                }
+            },
+        })
+        this.vm = this.app.mount("#app");
+    }
+</script>
+<script >
+    AFRAME.registerComponent("animation-manager", {
+        init: function () {
+            // add some stuff here at some point
+        }
+    });
+
+    AFRAME.registerComponent('posfinder', {
+        init: function () {
+            console.log("POS FINDER ONLINE");
+            this.loaded = false;
+            const selector = document.querySelector(".pos");
+            const cam1 = document.querySelector("#camera1");
+            window.addEventListener('gps-camera-update-position', e => {
+                if (this.loaded === false) {
+                    console.log("POS :: ", e.detail.position.latitude, e.detail.position.longitude);
+                    selector.innerText = `POS :: ${e.detail.position.latidude} : ${e.detail.position.longitude}`;
+                    this.loaded = true;
+                }
+            });
+        }
+    });
+
+    AFRAME.registerComponent('gaze-handler', {
+        schema: {
+            productId: { type: 'string', default: 'no product selected' },
+            color: { default: 'white' }
+        },
+
+        init: function () {
+            var data = this.data;
+            var el = this.el;  // <a-box>
+            var defaultColor = el.getAttribute('material').color;
+            const title = document.querySelector('.instructions');
+            let modal = document.querySelector('.modal');
+            let interval = null;
+            el.addEventListener('mousedown', function () {
+                interval = window.setInterval(() => {
+                    el.setAttribute('color', data.color);
+                    modal.classList.add("show")
+                    // renderImage();
+                    title.innerText = data.productId;
+                    window.vm.fetchProduct(data.productId);
+                }, 1000);
+            });
+
+            el.addEventListener('mouseup', function () {
+                window.clearInterval(interval);
+                el.setAttribute('color', defaultColor);
+                // modal.classList.remove("show");
+                // window.vm.clearProduct();
+            });
+        }
+    });
+
+    const staticLoadPlaces = [
+        {
+            name: 'Home',
+            location: {
+                lat: 37.766498,
+                lng: -122.41568,
+            }
+        },
+    ];
+
+    const models = [
+        {
+            url: './assets/brain/BrainStem.gltf',
+            scale: '1 1 1',
+            info: 'Avocadomite, Lv. 5, HP 10/10',
+            rotation: '0 180 0',
+        }
+    ];
+
+    const setModel = (model, entity) => {
+        if (model.scale) {
+            entity.setAttribute('scale', model.scale);
+        }
+
+        if (model.rotation) {
+            entity.setAttribute('rotation', model.rotation);
+        }
+
+        if (model.position) {
+            entity.setAttribute('position', model.position);
+        }
+
+        entity.setAttribute('gltf-model', model.url);
+
+        const div = document.querySelector('.instructions');
+        div.innerText = model.info;
+    };
+
+    const productModalAsImage = () => {
+        let marker = document.querySelector('#mark1');
+        var node = document.querySelector('#app');
+        let imgNode = document.querySelector('a-image');
+        domtoimage.toPng(node)
+            .then(function (dataUrl) {
+                var img = new Image();
+                img.src = dataUrl;
+                // document.body.appendChild(img);
+                // apend or create new node
+                if (!imgNode) {
+                    let model = document.createElement('a-image');
+                    model.setAttribute('id', 'img-node');
+                    model.setAttribute('src', dataUrl);
+                    model.setAttribute('scale', "3 3 3");
+                    model.setAttribute('rotation', "-90 0 0");
+                    model.setAttribute('position', "0 0 0");
+                    marker.appendChild(model);
+
+                }
+
+            })
+            .catch(function (error) {
+                console.error('oops, something went wrong!', error);
+            });
+
+    }
+
+    const renderPlaces = (places) => {
+        let scene = document.querySelector('a-scene');
+
+        places.forEach((place) => {
+            let latitude = place.location.lat;
+            let longitude = place.location.lng;
+
+            let model = document.createElement('a-entity');
+            model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+
+            setModel(models[0], model);
+
+            model.setAttribute('animation-mixer', '');
+
+            // model.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+            // model.setAttribute('gltf-model', 'https://cdn.aframe.io/test-models/models/glTF-2.0/brainstem/BrainStem.gltf');
+            // model.setAttribute('rotation', '0 180 0');
+            // model.setAttribute('animation-mixer', '');
+            // model.setAttribute('scale', '0.5 0.5 0.5');
+
+            // let model = document.createElement("a-image");
+            // model.setAttribute('rotation', '-45 0 0');
+            // model.setAttribute('src', 'https://lsco.scene7.com/is/image/lsco/005054891-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=900&hei=1200')
+            // model.setAttribute('animation-mixer', '');
+            // model.setAttribute('scale', '0.5 0.5 0.5');
+
+            model.addEventListener('loaded', () => {
+                window.dispatchEvent(new CustomEvent('gps-entity-place-loaded'))
+            });
+
+            scene.appendChild(model);
+        });
+    }
+    //wait until the page loads to perform the following
+</script>
 
 
 </html>
