@@ -55,6 +55,43 @@
         .product-card.product-card .product-details.separator {
             border-top: 2px solid #d6d6d6;
         }
+
+        .size-selector {
+            display: flex;
+            flex-direction: row;
+            padding: 10px 0;
+        }
+
+        .waist-sel, .length-sel {
+            flex-basis: 50%;
+        }
+
+        .size-val {
+            border: 1px solid black;
+            line-height: 40px;
+            margin: 8px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+        }
+
+        .waist-scroller, .length-scroller{
+            height: 75px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        .selected-w, .selected-l {
+            margin-bottom: 10px;
+        }
+
+        .size-sel.selected {
+            background: black;
+            color: white;
+        }
     </style>
 </head>
 
@@ -68,6 +105,28 @@
             <div class="product-price">$100.00</div>
         </div>
         <button class="atc-btn">Add To Cart</button>
+        <div class="size-selector">
+            <div class="waist-sel">
+                <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
+                <div class="waist-scroller">
+                    <div class="size-val">24</div>
+                    <div class="size-val">26</div>
+                    <div class="size-val">28</div>
+                    <div class="size-val">30</div>
+                    <div class="size-val">32</div>
+                </div>
+            </div>
+            <div class="length-sel">
+                <div class="selected-l">Length: {{selectedWaistIndex}}</div>
+                <div class="length-scroller">
+                    <div class="size-val">24</div>
+                    <div class="size-val">26</div>
+                    <div class="size-val">28</div>
+                    <div class="size-val">30</div>
+                    <div class="size-val">32</div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 <script>

@@ -162,6 +162,46 @@
         .product-card.product-card .product-details.separator {
             border-top: 2px solid #d6d6d6;
         }
+
+        .size-selector {
+            display: flex;
+            flex-direction: row;
+            padding: 10px 0;
+        }
+
+        .waist-sel, .length-sel {
+            flex-basis: 50%;
+            text-align: center;
+        }
+
+        .size-val {
+            border: 1px solid black;
+            line-height: 44px;
+            margin: 8px;
+            width: 44px;
+            height: 44px;
+            font-size: 16px;
+            text-align: center;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+        }
+
+        .waist-scroller, .length-scroller{
+            list-style-type: none;
+            height: 75px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        .selected-w, .selected-l {
+            margin-bottom: 10px;
+        }
+
+        .size-val.selected {
+            background: black;
+            color: white;
+        }
     </style>
 
 </head>
@@ -188,6 +228,27 @@
                 <div class="product-price">{{ item.data.product.price.formattedValue }}</div>
             </div>
             <button class="atc-btn" @click="closeModal">Add To Cart</button>
+            <div class="size-selector">
+                <div class="waist-sel">
+                    <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
+                    <ul class="waist-scroller">
+                        <li v-for="i in 6"
+                            :class="{'size-val': true, selected: i === selectedWaistIndex}"
+                            @click="setSelectedWaist(i)">{{i}}
+                        </li>
+                    </ul>
+                </div>
+                <div class="length-sel">
+                    <div class="selected-l">Length: {{selectedWaistIndex}}</div>
+                    <ul class="length-scroller">
+                        <li v-for="i in 6"
+                            :class="{'size-val': true, selected: i === selectedWaistIndex}"
+                            @click="setSelectedWaist(i)">
+                            {{i}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </script>
     <div class="modal" id="app">
@@ -299,10 +360,19 @@
             },
             setup(props) {
                 console.log("PROPS :: ", props.item);
+                const selectedWaistIndex = ref(0);
+
                 const closeModal = () => {
                     window.vm.clearProduct();
                 }
+
+                const setSelectedWaist = (i) => {
+                    selectedWaistIndex.value = i;
+                }
+
                 return {
+                    selectedWaistIndex,
+                    setSelectedWaist,
                     closeModal
                 }
             },
