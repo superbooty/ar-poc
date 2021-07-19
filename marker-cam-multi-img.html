@@ -131,12 +131,10 @@
 
         .product-card .product-img {
             margin: auto;
-            height: 100%;
         }
 
         .product-img img {
             width: 100%;
-            height: 100%;
             object-fit: cover;
         }
 
@@ -182,8 +180,10 @@
             height: 44px;
             font-size: 16px;
             text-align: center;
+            transform-origin: center;
             scroll-snap-align: center;
             scroll-snap-stop: always;
+            transition: background .250s ease-in;
         }
 
         .waist-scroller, .length-scroller{
@@ -207,6 +207,7 @@
             background: red;
             color: white;
         }
+
     </style>
 
 </head>
