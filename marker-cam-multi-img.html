@@ -173,41 +173,46 @@
         }
 
         .size-val {
-            border: 1px solid black;
-            line-height: 44px;
-            margin: 8px;
-            width: 44px;
-            height: 44px;
-            font-size: 16px;
+            margin: 8px 0;
+            width: 100%;
             text-align: center;
             transform-origin: center;
             scroll-snap-align: center;
             scroll-snap-stop: always;
-            transition: background .250s ease-in;
+        }
+
+        .size-val div {
+            margin: 0 auto;
+            height: 34px;
+            line-height: 34px;
+            border: 1px solid black;
+            font-size: 16px;
+            width: 44px;
+            transition: all 0.250s ease-in-out;
         }
 
         .waist-scroller, .length-scroller{
+            padding: 0;
             list-style-type: none;
-            height: 75px;
-            overflow-y: auto;
+            height: 64px;
+            overflow-y: scroll;
             scroll-behavior: smooth;
             scroll-snap-type: y mandatory;
+        }
+
+        .waist-scroller::-webkit-scrollbar {
+            display: none;
         }
 
         .selected-w, .selected-l {
             margin-bottom: 10px;
         }
 
-        .size-val.selected {
+        .size-val div.selected {
+            width: 56px;
             background: black;
             color: white;
         }
-
-        .size-val.in-view {
-            background: red;
-            color: white;
-        }
-
     </style>
 
 </head>
@@ -237,21 +242,23 @@
             <div class="size-selector">
                 <div class="waist-sel" >
                     <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
-                    <ul class="waist-scroller" ref="waistSel">
+                    <ul class="waist-scroller" ref="waistSel" >
                         <li v-for="i in 6" class="waist-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            @click="setSelectedWaist(i)">
-                            {{i}}
+                            >
+                            <div :class="{selected: i === selectedWaistIndex}"
+                            :data-index="i" @click="setSelectedWaist(i)">{{i}}</div>
                         </li>
                     </ul>
                 </div>
                 <div class="length-sel">
                     <div class="selected-l">Length: {{selectedWaistIndex}}</div>
-                    <ul class="length-scroller">
-                        <li v-for="i in 6" class="length-val"
+                    <ul class="length-scroller" ref="lengthSel" >
+                        <li v-for="i in 6" class="waist-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            @click="setSelectedWaist(i)">
-                            {{i}}
+                            >
+                            <div :class="{selected: i === selectedWaistIndex}"
+                            :data-index="i" @click="setSelectedWaist(i)">{{i}}</div>
                         </li>
                     </ul>
                 </div>
@@ -381,8 +388,12 @@
                     selectedWaistIndex.value = i;
                 }
 
+                const handleScroll = () => {
+                    console.log("scrolling...");
+                }
+
                 const startObserving = () => {
-                    document.querySelectorAll('.waist-val').forEach((listItem) => {
+                    waistSel.value.querySelectorAll('.waist-val div').forEach((listItem) => {
                         console.log("observing...", listItem);
                         observer.value.observe(listItem);
                     })
@@ -392,14 +403,16 @@
                     observer.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
-                                entry.target.classList.add('in-view');
+                                entry.target.classList.add('selected');
+                                const idx = entry.target.dataset.index;
+                                setSelectedWaist(idx);
                             } else {
-                                entry.target.classList.remove('in-view');
+                                entry.target.classList.remove('selected');
                             }
                         });
                     }, {
                         root: waistSel.value,
-                        threshold: .75
+                        threshold: [ 0.75 ]
                     });
                 });
 
@@ -407,7 +420,9 @@
                 watch(() => props.item, (now, prev) => {
                     console.log("item :: ", now);
                     nextTick(() => {
-                        startObserving();
+                        if (now) {
+                            startObserving();
+                        }
                     });
                 });
 
@@ -416,6 +431,7 @@
                     setSelectedWaist,
                     selectedLengthIndex,
                     waistSel,
+                    handleScroll,
                     closeModal
                 }
             },

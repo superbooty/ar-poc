@@ -69,21 +69,34 @@
         }
 
         .size-val {
-            border: 1px solid black;
-            line-height: 40px;
-            margin: 8px;
-            width: 40px;
-            height: 40px;
+            margin: 8px 0;
+            width: 100%;
             text-align: center;
+            transform-origin: center;
             scroll-snap-align: center;
             scroll-snap-stop: always;
         }
 
+        .size-val div {
+            margin: 0 auto;
+            height: 44px;
+            line-height: 44px;
+            border: 1px solid black;
+            font-size: 16px;
+            width: 44px;
+        }
+
         .waist-scroller, .length-scroller{
+            padding: 0;
+            list-style-type: none;
             height: 75px;
-            overflow-y: auto;
+            overflow-y: scroll;
             scroll-behavior: smooth;
             scroll-snap-type: y mandatory;
+        }
+
+        .waist-scroller::-webkit-scrollbar {
+            display: none;
         }
 
         .selected-w, .selected-l {
@@ -95,8 +108,9 @@
             color: white;
         }
 
-        .size-val.in-view {
-            background: red;
+        .size-val div.in-view {
+            width: 54px;
+            background: #a71e1e;
             color: white;
         }
     </style>
@@ -121,13 +135,13 @@
         <div class="size-selector">
             <div class="waist-sel" ref="waistSel">
                 <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
-                <div class="waist-scroller">
-                    <div class="waist-val size-val">24</div>
-                    <div class="waist-val size-val">26</div>
-                    <div class="waist-val size-val">28</div>
-                    <div class="waist-val size-val">30</div>
-                    <div class="waist-val size-val">32</div>
-                </div>
+                <ul class="waist-scroller">
+                    <li class="waist-val size-val"><div>24</div></li>
+                    <li class="waist-val size-val"><div>26</div></li>
+                    <li class="waist-val size-val"><div>28</div></li>
+                    <li class="waist-val size-val"><div>30</div></li>
+                    <li class="waist-val size-val"><div>34</div></li>
+                </ul>
             </div>
             <div class="length-sel">
                 <div class="selected-l">Length: {{selectedWaistIndex}}</div>
@@ -227,7 +241,7 @@
                 const startObserving = () => {
                     console.log("HMMM :: ", waistSel);
                     test.value = document.querySelectorAll('.waist-val.size-val');
-                    waistSel.value.querySelectorAll('.waist-val').forEach((listItem) => {
+                    waistSel.value.querySelectorAll('.waist-val div').forEach((listItem) => {
                         console.log("observing...", listItem);
                         observer.value.observe(listItem);
                     })
@@ -237,6 +251,7 @@
                     observer.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
+                                console.log("calling...");
                                 entry.target.classList.add('in-view');
                             } else {
                                 entry.target.classList.remove('in-view');
@@ -244,15 +259,13 @@
                         });
                     }, {
                         root: waistSel.value,
-                        threshold: 1
+                        threshold: [.75]
                     });
-                });
-
-                onUpdated(() => {
                     nextTick(() => {
                         startObserving();
                     });
                 });
+
 
                 return {
                     selectedWaistIndex,
