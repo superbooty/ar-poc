@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <script src="https://unpkg.com/vue@next"></script>
+
     <style type="text/css">
         .product-card {
             display: flex;
@@ -88,14 +90,25 @@
             margin-bottom: 10px;
         }
 
-        .size-sel.selected {
+        .size-val.selected {
             background: black;
+            color: white;
+        }
+
+        .size-val.in-view {
+            background: red;
             color: white;
         }
     </style>
 </head>
 
 <body>
+<script type="text/x-template" id="app-template">
+    <div id="#wrapper" ref="productWrapper">
+        <product ></product>
+    </div>
+</script>
+<script type="text/x-template" id="product-template">
     <div class="product-card">
         <div class="product-img"><img
                 src="https://lsco.scene7.com/is/image/lsco/177800038-front-pdp?$grid_desktop_bottoms$"></div>
@@ -106,14 +119,14 @@
         </div>
         <button class="atc-btn">Add To Cart</button>
         <div class="size-selector">
-            <div class="waist-sel">
+            <div class="waist-sel" ref="waistSel">
                 <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
                 <div class="waist-scroller">
-                    <div class="size-val">24</div>
-                    <div class="size-val">26</div>
-                    <div class="size-val">28</div>
-                    <div class="size-val">30</div>
-                    <div class="size-val">32</div>
+                    <div class="waist-val size-val">24</div>
+                    <div class="waist-val size-val">26</div>
+                    <div class="waist-val size-val">28</div>
+                    <div class="waist-val size-val">30</div>
+                    <div class="waist-val size-val">32</div>
                 </div>
             </div>
             <div class="length-sel">
@@ -128,8 +141,133 @@
             </div>
         </div>
     </div>
+</script>
+<div class="modal" id="app">
 </body>
-<script>
+<script type="module">
+    // I dont like this
+    // window.query = productQuery;
+    window.onload = function () {
+        // renderPlaces(staticLoadPlaces);
+        const {
+            createApp,
+            reactive,
+            ref,
+            onMounted,
+            onUpdated,
+            nextTick
+        } = Vue;
+
+        const App = {
+            template: `#app-template`,
+            setup() {
+                const item = ref(null);
+                const clearProduct = () => {
+                    item.value = null;
+                }
+                const fetchProduct = (code) => {
+                    const fetchPromises = [];
+                    const promise = fetch(`https://www.levi.com/nextgen-webhooks/?operationName=product&locale=US-en_US`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                        body: JSON.stringify({
+                            operationName: "product",
+                            variables: {
+                                code: code
+                            },
+                            query: productQuery
+                        }),
+                    });
+                    fetchPromises.push(promise);
+                    Promise.all(fetchPromises).then(function (responses) {
+                        // Get a JSON object from each of the responses
+                        return Promise.all(responses.map(function (response) {
+                            return response.json();
+                        }));
+                    }).then(function (data) {
+                        console.log("DATA :: ", data[0]);
+                        item.value = data[0];
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+                return {
+                    item,
+                    fetchProduct,
+                    clearProduct,
+                }
+            },
+        }
+        this.app = createApp(App);
+
+        app.component("product", {
+            template: '#product-template',
+            props: {
+                item: Object,
+            },
+            setup(props) {
+                console.log("PROPS :: ", props.item);
+                const selectedWaistIndex = ref(0);
+                const selectedLengthIndex = ref(0);
+                const waistSel = ref(null);
+                const test = ref(null);
+                const observer = ref(null);
+
+                const closeModal = () => {
+                    window.vm.clearProduct();
+                }
+
+                const setSelectedWaist = (i) => {
+                    selectedWaistIndex.value = i;
+                }
+
+                const startObserving = () => {
+                    console.log("HMMM :: ", waistSel);
+                    test.value = document.querySelectorAll('.waist-val.size-val');
+                    waistSel.value.querySelectorAll('.waist-val').forEach((listItem) => {
+                        console.log("observing...", listItem);
+                        observer.value.observe(listItem);
+                    })
+                }
+
+                onMounted(() => {
+                    observer.value = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('in-view');
+                            } else {
+                                entry.target.classList.remove('in-view');
+                            }
+                        });
+                    }, {
+                        root: waistSel.value,
+                        threshold: 1
+                    });
+                });
+
+                onUpdated(() => {
+                    nextTick(() => {
+                        startObserving();
+                    });
+                });
+
+                return {
+                    selectedWaistIndex,
+                    setSelectedWaist,
+                    selectedLengthIndex,
+                    waistSel,
+                    test,
+                    closeModal
+                }
+            },
+        })
+        this.vm = this.app.mount("#app");
+    }
+</script>
+<!-- <script>
     let viewer = document.querySelector('.product-card');
     viewer.addEventListener('click', () => {
         console.log('test');
@@ -137,5 +275,28 @@
         viewer.classList.add('test')
         window.vm.clearProduct();
     });
+
+   window.onload = (event) => {
+       console.log("loaded");
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                console.log("observing..");
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                } else {
+                    entry.target.classList.remove('in-view');
+                }
+            });
+        }, {
+            root: document.querySelector('.waist-scroller'),
+            threshold: 1
+        });
+
+        document.querySelectorAll('.waist-val').forEach((listItem) => {
+            observer.observe(listItem);
+        });
+   };
+
 </script>
+-->
 </html>

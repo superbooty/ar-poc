@@ -202,6 +202,11 @@
             background: black;
             color: white;
         }
+
+        .size-val.in-view {
+            background: red;
+            color: white;
+        }
     </style>
 
 </head>
@@ -229,19 +234,20 @@
             </div>
             <button class="atc-btn" @click="closeModal">Add To Cart</button>
             <div class="size-selector">
-                <div class="waist-sel">
+                <div class="waist-sel" >
                     <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
-                    <ul class="waist-scroller">
-                        <li v-for="i in 6"
+                    <ul class="waist-scroller" ref="waistSel">
+                        <li v-for="i in 6" class="waist-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            @click="setSelectedWaist(i)">{{i}}
+                            @click="setSelectedWaist(i)">
+                            {{i}}
                         </li>
                     </ul>
                 </div>
                 <div class="length-sel">
                     <div class="selected-l">Length: {{selectedWaistIndex}}</div>
                     <ul class="length-scroller">
-                        <li v-for="i in 6"
+                        <li v-for="i in 6" class="length-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
                             @click="setSelectedWaist(i)">
                             {{i}}
@@ -305,7 +311,8 @@
             reactive,
             ref,
             onMounted,
-            nextTick
+            nextTick,
+            watch
         } = Vue;
 
         const App = {
@@ -361,6 +368,9 @@
             setup(props) {
                 console.log("PROPS :: ", props.item);
                 const selectedWaistIndex = ref(0);
+                const selectedLengthIndex = ref(0);
+                const waistSel = ref(null);
+                const observer = ref(null);
 
                 const closeModal = () => {
                     window.vm.clearProduct();
@@ -370,9 +380,41 @@
                     selectedWaistIndex.value = i;
                 }
 
+                const startObserving = () => {
+                    document.querySelectorAll('.waist-val').forEach((listItem) => {
+                        console.log("observing...", listItem);
+                        observer.value.observe(listItem);
+                    })
+                }
+
+                onMounted(() => {
+                    observer.value = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('in-view');
+                            } else {
+                                entry.target.classList.remove('in-view');
+                            }
+                        });
+                    }, {
+                        root: waistSel.value,
+                        threshold: .75
+                    });
+                });
+
+                 // watcher
+                watch(() => props.item, (now, prev) => {
+                    console.log("item :: ", now);
+                    nextTick(() => {
+                        startObserving();
+                    });
+                });
+
                 return {
                     selectedWaistIndex,
                     setSelectedWaist,
+                    selectedLengthIndex,
+                    waistSel,
                     closeModal
                 }
             },
