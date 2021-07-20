@@ -241,13 +241,13 @@
             <button class="atc-btn" @click="closeModal">Add To Cart</button>
             <div class="size-selector">
                 <div class="waist-sel" >
-                    <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
+                    <div class="selected-w">Waist: {{waistSizes[selectedWaistIndex]}}</div>
                     <ul class="waist-scroller" ref="waistSel" >
-                        <li v-for="i in 6" class="waist-val"
+                        <li v-for="(size, i) in waistSizes" class="waist-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            >
+                            :key="`w-${size}`">
                             <div :class="{selected: i === selectedWaistIndex}"
-                            :data-index="i" @click="setSelectedWaist(i)">{{i}}</div>
+                            :data-index="i">{{size}}</div>
                         </li>
                     </ul>
                 </div>
@@ -258,7 +258,7 @@
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
                             >
                             <div :class="{selected: i === selectedWaistIndex}"
-                            :data-index="i" @click="setSelectedWaist(i)">{{i}}</div>
+                            :data-index="i">{{i}}</div>
                         </li>
                     </ul>
                 </div>
@@ -377,6 +377,7 @@
                 console.log("PROPS :: ", props.item);
                 const selectedWaistIndex = ref(0);
                 const selectedLengthIndex = ref(0);
+                const waistSizes = ref([ "24", "26", "28", "30", "32" ]);
                 const waistSel = ref(null);
                 const observer = ref(null);
 
@@ -431,6 +432,7 @@
                     setSelectedWaist,
                     selectedLengthIndex,
                     waistSel,
+                    waistSizes,
                     handleScroll,
                     closeModal
                 }
