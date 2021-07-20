@@ -66,10 +66,11 @@
 
         .waist-sel, .length-sel {
             flex-basis: 50%;
+            text-align: center;
         }
 
         .size-val {
-            margin: 8px 0;
+            margin: 4px 0;
             width: 100%;
             text-align: center;
             transform-origin: center;
@@ -79,17 +80,18 @@
 
         .size-val div {
             margin: 0 auto;
-            height: 44px;
-            line-height: 44px;
+            height: 34px;
+            line-height: 34px;
             border: 1px solid black;
             font-size: 16px;
             width: 44px;
+            transition: all 0.250s ease-in-out;
         }
 
         .waist-scroller, .length-scroller{
             padding: 0;
             list-style-type: none;
-            height: 75px;
+            height: 64px;
             overflow-y: scroll;
             scroll-behavior: smooth;
             scroll-snap-type: y mandatory;
@@ -103,14 +105,9 @@
             margin-bottom: 10px;
         }
 
-        .size-val.selected {
+        .size-val div.selected {
+            width: 56px;
             background: black;
-            color: white;
-        }
-
-        .size-val div.in-view {
-            width: 54px;
-            background: #a71e1e;
             color: white;
         }
     </style>
@@ -252,14 +249,14 @@
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
                                 console.log("calling...");
-                                entry.target.classList.add('in-view');
+                                entry.target.classList.add('selected');
                             } else {
-                                entry.target.classList.remove('in-view');
+                                entry.target.classList.remove('selected');
                             }
                         });
                     }, {
                         root: waistSel.value,
-                        threshold: [.75]
+                        threshold: [.85]
                     });
                     nextTick(() => {
                         startObserving();
