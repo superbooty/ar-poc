@@ -252,13 +252,13 @@
                     </ul>
                 </div>
                 <div class="length-sel">
-                    <div class="selected-l">Length: {{selectedWaistIndex}}</div>
+                    <div class="selected-l">Length: {{lengthSizes[selectedLengthIndex]}}</div>
                     <ul class="length-scroller" ref="lengthSel" >
-                        <li v-for="i in 6" class="waist-val"
-                            :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            >
-                            <div :class="{selected: i === selectedWaistIndex}"
-                            :data-index="i">{{i}}</div>
+                        <li v-for="(size, i) in lengthSizes" class="length-val"
+                            :class="{'size-val': true, selected: i === selectedLengthIndex}"
+                            :key="`l-${size}`">
+                            <div :class="{selected: i === selectedLengthIndex}"
+                            :data-index="i">{{size}}</div>
                         </li>
                     </ul>
                 </div>
@@ -378,8 +378,11 @@
                 const selectedWaistIndex = ref(0);
                 const selectedLengthIndex = ref(0);
                 const waistSizes = ref([ "24", "26", "28", "30", "32" ]);
+                const lengthSizes = ref([ "26", "28", "30", "32", "34", "36" ]);
                 const waistSel = ref(null);
-                const observer = ref(null);
+                const lengthSel = ref(null);
+                const observerW = ref(null);
+                const observerL = ref(null);
 
                 const closeModal = () => {
                     window.vm.clearProduct();
@@ -389,6 +392,10 @@
                     selectedWaistIndex.value = i;
                 }
 
+                const setSelectedLength = (i) => {
+                    selectedLengthIndex.value = i;
+                }
+
                 const handleScroll = () => {
                     console.log("scrolling...");
                 }
@@ -396,12 +403,16 @@
                 const startObserving = () => {
                     waistSel.value.querySelectorAll('.waist-val div').forEach((listItem) => {
                         console.log("observing...", listItem);
-                        observer.value.observe(listItem);
+                        observerW.value.observe(listItem);
+                    });
+                    lengthSel.value.querySelectorAll('.length-val div').forEach((listItem) => {
+                        console.log("observing...", listItem);
+                        observerL.value.observe(listItem);
                     })
                 }
 
                 onMounted(() => {
-                    observer.value = new IntersectionObserver((entries) => {
+                    observerW.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
                                 entry.target.classList.add('selected');
@@ -413,6 +424,21 @@
                         });
                     }, {
                         root: waistSel.value,
+                        threshold: [ 0.75 ]
+                    });
+
+                    observerL.value = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('selected');
+                                const idx = entry.target.dataset.index;
+                                setSelectedLength(idx);
+                            } else {
+                                entry.target.classList.remove('selected');
+                            }
+                        });
+                    }, {
+                        root: lengthSel.value,
                         threshold: [ 0.75 ]
                     });
                 });
@@ -432,7 +458,9 @@
                     setSelectedWaist,
                     selectedLengthIndex,
                     waistSel,
+                    lengthSel,
                     waistSizes,
+                    lengthSizes,
                     handleScroll,
                     closeModal
                 }
