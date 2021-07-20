@@ -61,7 +61,13 @@
         .size-selector {
             display: flex;
             flex-direction: row;
+            max-height: 0px;
+            transition: max-height .250s ease-in;
             padding: 10px 0;
+        }
+
+        .size-selector.active {
+            max-height: 500px;
         }
 
         .waist-sel, .length-sel {
@@ -70,7 +76,7 @@
         }
 
         .size-val {
-            margin: 4px 0;
+            margin: 8px 0;
             width: 100%;
             text-align: center;
             transform-origin: center;
@@ -129,9 +135,9 @@
             <div class="product-price">$100.00</div>
         </div>
         <button class="atc-btn">Add To Cart</button>
-        <div class="size-selector">
+        <div class="size-selector" :class="{'active': showSizeSelector}">
             <div class="waist-sel" ref="waistSel">
-                <div class="selected-w">Waist: {{selectedWaistIndex}}</div>
+                <div class="selected-w">Waist: {{waistSizes[selectedWaistIndex]}}</div>
                 <ul class="waist-scroller">
                     <li class="waist-val size-val"><div>24</div></li>
                     <li class="waist-val size-val"><div>26</div></li>
@@ -140,16 +146,17 @@
                     <li class="waist-val size-val"><div>34</div></li>
                 </ul>
             </div>
-            <div class="length-sel">
-                <div class="selected-l">Length: {{selectedWaistIndex}}</div>
+            <div class="length-sel" ref="lengthSel">
+                <div class="selected-l">Length: {{lengthSizes[selectedLengthIndex]}}</div>
                 <div class="length-scroller">
-                    <div class="size-val">24</div>
-                    <div class="size-val">26</div>
-                    <div class="size-val">28</div>
-                    <div class="size-val">30</div>
-                    <div class="size-val">32</div>
+                    <li class="length-val size-val"><div>26</div></li>
+                    <li class="length-val size-val"><div>28</div></li>
+                    <li class="length-val size-val"><div>30</div></li>
+                    <li class="length-val size-val"><div>32</div></li>
+                    <li class="length-val size-val"><div>34</div></li>
                 </div>
             </div>
+            <button class="atc-btn" @click="closeModal">Add To Bag</button>
         </div>
     </div>
 </script>
@@ -223,10 +230,18 @@
                 console.log("PROPS :: ", props.item);
                 const selectedWaistIndex = ref(0);
                 const selectedLengthIndex = ref(0);
+                const waistSizes = ref([ "24", "26", "28", "30", "32" ]);
+                const lengthSizes = ref([ "26", "28", "30", "32", "34", "36" ]);
                 const waistSel = ref(null);
-                const test = ref(null);
-                const observer = ref(null);
+                const lengthSel = ref(null);
+                const observerW = ref(null);
+                const observerL = ref(null);
+                const showSizeSelector = ref(false);
 
+                const selectSizes = () => {
+                    showSizeSelector.value = !showSizeSelector.value;
+                    // window.vm.clearProduct();
+                }
                 const closeModal = () => {
                     window.vm.clearProduct();
                 }
@@ -235,42 +250,79 @@
                     selectedWaistIndex.value = i;
                 }
 
+                const setSelectedLength = (i) => {
+                    selectedLengthIndex.value = i;
+                }
+
+                const handleScroll = () => {
+                    console.log("scrolling...");
+                }
+
                 const startObserving = () => {
-                    console.log("HMMM :: ", waistSel);
-                    test.value = document.querySelectorAll('.waist-val.size-val');
                     waistSel.value.querySelectorAll('.waist-val div').forEach((listItem) => {
                         console.log("observing...", listItem);
-                        observer.value.observe(listItem);
+                        observerW.value.observe(listItem);
+                    });
+                    lengthSel.value.querySelectorAll('.length-val div').forEach((listItem) => {
+                        console.log("observing...", listItem);
+                        observerL.value.observe(listItem);
                     })
                 }
 
                 onMounted(() => {
-                    observer.value = new IntersectionObserver((entries) => {
+                    observerW.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
-                                console.log("calling...");
                                 entry.target.classList.add('selected');
+                                const idx = entry.target.dataset.index;
+                                setSelectedWaist(idx);
                             } else {
                                 entry.target.classList.remove('selected');
                             }
                         });
                     }, {
                         root: waistSel.value,
-                        threshold: [.85]
+                        threshold: [ 0.75 ]
                     });
-                    nextTick(() => {
-                        startObserving();
+
+                    observerL.value = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('selected');
+                                const idx = entry.target.dataset.index;
+                                setSelectedLength(idx);
+                            } else {
+                                entry.target.classList.remove('selected');
+                            }
+                        });
+                    }, {
+                        root: lengthSel.value,
+                        threshold: [ 0.75 ]
                     });
+                    startObserving();
                 });
 
+                 // watcher
+                // watch(() => props.item, (now, prev) => {
+                //     console.log("item :: ", now);
+                //     nextTick(() => {
+                //         if (now) {
+                //             startObserving();
+                //         }
+                //     });
+                // });
 
                 return {
                     selectedWaistIndex,
                     setSelectedWaist,
                     selectedLengthIndex,
                     waistSel,
-                    test,
-                    closeModal
+                    lengthSel,
+                    waistSizes,
+                    lengthSizes,
+                    handleScroll,
+                    selectSizes,
+                    showSizeSelector
                 }
             },
         })

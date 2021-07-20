@@ -120,13 +120,17 @@
             flex-wrap: nowrap;
         }
 
-        .product-card .atc-btn {
+        .atc-btn, .product-card .size-selections{
             height: 40px;
             background: black;
             color: white;
             font-weight: 700;
             font-size: 16px;
             margin: 10px 0;
+        }
+
+        .atc-btn {
+            flex-basis: 100%;
         }
 
         .product-card .product-img {
@@ -164,7 +168,15 @@
         .size-selector {
             display: flex;
             flex-direction: row;
+            flex-wrap: wrap;
+            overflow-y: hidden;
+            max-height: 0px;
+            transition: max-height .250s ease-in;
             padding: 10px 0;
+        }
+
+        .size-selector.active {
+            max-height: 500px;
         }
 
         .waist-sel, .length-sel {
@@ -238,8 +250,8 @@
                 <div class="color">Color: {{ item.data.product.colorName }}</div>
                 <div class="product-price">{{ item.data.product.price.formattedValue }}</div>
             </div>
-            <button class="atc-btn" @click="closeModal">Add To Cart</button>
-            <div class="size-selector">
+            <button class="size-selections" @click="selectSizes">Select Sizes</button>
+            <div class="size-selector" :class="{'active': showSizeSelector}">
                 <div class="waist-sel" >
                     <div class="selected-w">Waist: {{waistSizes[selectedWaistIndex]}}</div>
                     <ul class="waist-scroller" ref="waistSel" >
@@ -262,6 +274,7 @@
                         </li>
                     </ul>
                 </div>
+                <button class="atc-btn" @click="closeModal">Add To Bag</button>
             </div>
         </div>
     </script>
@@ -383,7 +396,12 @@
                 const lengthSel = ref(null);
                 const observerW = ref(null);
                 const observerL = ref(null);
+                const showSizeSelector = ref(false);
 
+                const selectSizes = () => {
+                    showSizeSelector.value = !showSizeSelector.value;
+                    // window.vm.clearProduct();
+                }
                 const closeModal = () => {
                     window.vm.clearProduct();
                 }
@@ -462,7 +480,8 @@
                     waistSizes,
                     lengthSizes,
                     handleScroll,
-                    closeModal
+                    selectSizes,
+                    showSizeSelector
                 }
             },
         })
