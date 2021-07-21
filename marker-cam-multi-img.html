@@ -433,11 +433,8 @@
                     observerW.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
-                                entry.target.classList.add('selected');
                                 const idx = entry.target.dataset.index;
-                                setSelectedWaist(idx);
-                            } else {
-                                entry.target.classList.remove('selected');
+                                setSelectedWaist(parseInt(idx));
                             }
                         });
                     }, {
@@ -448,11 +445,8 @@
                     observerL.value = new IntersectionObserver((entries) => {
                         entries.forEach((entry) => {
                             if (entry.isIntersecting) {
-                                entry.target.classList.add('selected');
                                 const idx = entry.target.dataset.index;
-                                setSelectedLength(idx);
-                            } else {
-                                entry.target.classList.remove('selected');
+                                setSelectedLength(parseInt(idx));
                             }
                         });
                     }, {
