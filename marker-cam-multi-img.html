@@ -133,6 +133,20 @@
             flex-basis: 100%;
         }
 
+        .size-selector-trigger {
+            color: black;
+            text-align: center;
+            border-top: 1px solid;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .size-selector-trigger::after {
+            content: "\25BC";
+            font-size: 16px;
+            margin-left: 5px;
+        }
+
         .product-card .product-img {
             margin: auto;
         }
@@ -212,7 +226,7 @@
             scroll-snap-type: y mandatory;
         }
 
-        .waist-scroller::-webkit-scrollbar {
+         .waist-scroller::-webkit-scrollbar, .length-scroller::-webkit-scrollbar{
             display: none;
         }
 
@@ -250,14 +264,14 @@
                 <div class="color">Color: {{ item.data.product.colorName }}</div>
                 <div class="product-price">{{ item.data.product.price.formattedValue }}</div>
             </div>
-            <button class="size-selections" @click="selectSizes">Select Sizes</button>
+            <div class="size-selector-trigger" @click="selectSizes">Select Sizes</div>
             <div class="size-selector" :class="{'active': showSizeSelector}">
                 <div class="waist-sel" >
                     <div class="selected-w">Waist: {{waistSizes[selectedWaistIndex]}}</div>
                     <ul class="waist-scroller" ref="waistSel" >
                         <li v-for="(size, i) in waistSizes" class="waist-val"
                             :class="{'size-val': true, selected: i === selectedWaistIndex}"
-                            :key="`w-${size}`">
+                            :key="`w-${i}-${size}`">
                             <div :class="{selected: i === selectedWaistIndex}"
                             :data-index="i">{{size}}</div>
                         </li>
@@ -268,7 +282,7 @@
                     <ul class="length-scroller" ref="lengthSel" >
                         <li v-for="(size, i) in lengthSizes" class="length-val"
                             :class="{'size-val': true, selected: i === selectedLengthIndex}"
-                            :key="`l-${size}`">
+                            :key="`l-${i}-${size}`">
                             <div :class="{selected: i === selectedLengthIndex}"
                             :data-index="i">{{size}}</div>
                         </li>

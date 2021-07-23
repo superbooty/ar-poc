@@ -25,6 +25,18 @@
             margin: 10px 0;
         }
 
+        .size-selector-trigger {
+            color: black;
+            text-align: center;
+            border-top: 1px solid;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .size-selector-trigger::after {
+            content: "\25BE";
+        }
+
         .product-card .product-img {
             margin: auto;
             height: 100%;
@@ -136,7 +148,7 @@
             <div class="color">Color: Celestial Rinse</div>
             <div class="product-price">$100.00</div>
         </div>
-        <button class="atc-btn">Select Sizes</button>
+        <div class="size-selector-trigger">Select Sizes</div>
         <div class="size-selector" :class="{'active': showSizeSelector}">
             <div class="waist-sel" >
                 <div class="selected-w">Waist: {{waistSizes[selectedWaistIndex]}}</div>
